@@ -275,12 +275,12 @@ export const AdminDashboard: React.FC = () => {
           initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
           animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="min-h-screen bg-transparent text-slate-800 pb-24 md:pb-12 relative"
+          className="min-h-screen bg-transparent text-slate-800 pb-28 md:pb-12 relative"
         >
            <WaveBackground level={systemState ? (systemState.waterLevel / systemState.dangerThreshold) * 80 : 10} state={floodState} />
        
        <header className="bg-white/85 backdrop-blur-md border border-white/50 sticky top-0 z-50 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
              <div className="flex items-center gap-3">
                 <div className="bg-white/50 p-1 rounded-lg shadow-sm border border-white/20">
                   <img 
@@ -336,7 +336,7 @@ export const AdminDashboard: React.FC = () => {
            </div>
        </header>
 
-       <main className="max-w-7xl mx-auto px-6 mt-8 flex flex-col md:flex-row gap-8 relative z-10">
+       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex flex-col md:flex-row gap-8 relative z-10">
          {activeTab === 'overview' ? (
            <>
           <div className="w-full md:w-1/3 flex flex-col gap-6">
@@ -530,12 +530,12 @@ export const AdminDashboard: React.FC = () => {
                </div>
             </div>
           ) : activeTab === 'audit' ? (
-            <div className="w-full">
-              <div className="bg-white/90 backdrop-blur-md border border-white/50 rounded-[1.5rem] p-8 shadow-xl">
+            <div className="w-full min-w-0">
+              <div className="bg-white/90 backdrop-blur-md border border-white/50 rounded-[1.5rem] p-6 sm:p-8 shadow-xl overflow-hidden">
                 <h2 className="text-xl font-bold text-blue-900 mb-6 flex items-center gap-2">
                   <ClipboardList className="w-6 h-6 text-blue-500" /> Audit Trail
                 </h2>
-                <div className="grid gap-3">
+                <div className="grid gap-3 min-w-0">
                   {auditLogs.length === 0 && (
                     <div className="text-center py-10 px-4 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
                       <p className="text-slate-400 font-semibold text-sm">No audit logs yet.</p>
@@ -544,18 +544,26 @@ export const AdminDashboard: React.FC = () => {
                   {auditLogs.map((log) => (
                     <div
                       key={log.id}
-                      className="flex flex-row justify-between items-start gap-4 bg-white border border-slate-100 p-4 rounded-xl shadow-sm"
+                      className="relative w-full overflow-hidden bg-white border border-slate-100 rounded-xl shadow-sm"
                     >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-slate-800">{log.action}</p>
-                        <p className="text-xs text-slate-400 mt-1">{log.target}</p>
-                        <p className="text-xs text-slate-400 mt-1">{log.details}</p>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <p className="text-xs font-medium text-slate-600">{log.adminEmail}</p>
-                        <p className="text-[10px] text-slate-400 mt-1">
-                          {log.timestamp ? format(log.timestamp.toDate(), 'MMM d, yyyy h:mm:ss a') : ''}
-                        </p>
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-1.5 bg-orange-500"
+                        aria-hidden
+                      />
+                      <div className="relative z-10 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 min-w-0 p-4 pr-5">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-slate-800 truncate">{log.action}</p>
+                          <p className="text-xs text-slate-400 truncate mt-1">{log.target}</p>
+                          <p className="text-xs text-slate-500 break-words mt-1">{log.details}</p>
+                        </div>
+                        <div className="flex-shrink-0 sm:text-right w-full sm:w-auto mt-3 sm:mt-0 pt-3 sm:pt-0 border-t border-slate-100 sm:border-t-0">
+                          <p className="text-xs text-slate-600 break-all sm:break-normal">
+                            {log.adminEmail}
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {log.timestamp ? format(log.timestamp.toDate(), 'MMM d, yyyy h:mm:ss a') : ''}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}
