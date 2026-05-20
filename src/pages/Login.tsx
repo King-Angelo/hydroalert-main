@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { signUpWithEmail, loginWithEmail, signInWithGoogle, db, handleFirestoreError, OperationType, signOut } from '../lib/firebase';
 import { Mail, Eye, EyeOff, User, Phone, X } from 'lucide-react';
 import { WaveBackground } from '../components/WaveBackground';
+import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
 import { doc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 
 export const Login: React.FC = () => {
@@ -19,6 +20,7 @@ export const Login: React.FC = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
@@ -330,6 +332,17 @@ export const Login: React.FC = () => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {!isSignUp && (
+              <div className="flex justify-end mt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsForgotPasswordOpen(true)}
+                  className="text-xs font-semibold text-slate-400 hover:text-slate-600 hover:underline transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
           </div>
           <button 
              type="submit" 
@@ -412,6 +425,12 @@ export const Login: React.FC = () => {
         </div>
       </div>
     )}
+
+    <ForgotPasswordModal
+      isOpen={isForgotPasswordOpen}
+      initialEmail={email}
+      onClose={() => setIsForgotPasswordOpen(false)}
+    />
     </>
   );
 };
