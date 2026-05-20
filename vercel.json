@@ -1,5 +1,8 @@
 {
-    "rewrites": [
-      { "source": "/(.*)", "destination": "/" }
-    ]
-  }
+  "rewrites": [
+    {
+      "source": "/((?!sw\\.js$|manifest\\.json$|icons/).*)",
+      "destination": "/"
+    }
+  ]
+}

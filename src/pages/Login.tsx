@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { signUpWithEmail, loginWithEmail, signInWithGoogle, db, handleFirestoreError, OperationType, signOut } from '../lib/firebase';
-import { Droplet, ShieldAlert, Mail, Eye, EyeOff, User, Phone, LogOut } from 'lucide-react';
+import { Mail, Eye, EyeOff, User, Phone, X } from 'lucide-react';
 import { WaveBackground } from '../components/WaveBackground';
 import { doc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 
@@ -19,6 +19,23 @@ export const Login: React.FC = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('hydroalert-install-dismissed') === 'true') {
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
 
   useEffect(() => {
     const unsubState = onSnapshot(doc(db, 'systemState', 'current'), (snapshot) => {
@@ -118,11 +135,32 @@ export const Login: React.FC = () => {
     }
   };
 
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) return;
+    await deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBanner(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const dismissInstallBanner = () => {
+    localStorage.setItem('hydroalert-install-dismissed', 'true');
+    setShowInstallBanner(false);
+    setDeferredPrompt(null);
+  };
+
   const handleGoogleLogin = async () => {
+    setError('');
+    setMessage('');
+    setIsLoading(true);
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
+      setError(err.message || 'Failed to sign in with Google');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -198,7 +236,8 @@ export const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-transparent p-4">
+    <>
+    <div className="min-h-screen flex items-center justify-center relative bg-transparent p-4 pb-24">
       <WaveBackground level={waveLevel} state={floodState} />
       
       <div className="bg-white/85 backdrop-blur-md p-8 rounded-[1.5rem] shadow-xl border border-white/50 max-w-sm w-full">
@@ -310,7 +349,8 @@ export const Login: React.FC = () => {
         <button
           onClick={handleGoogleLogin}
           type="button"
-          className="w-full bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-3 transition-colors shadow-sm mb-6 text-sm"
+          disabled={isLoading}
+          className="w-full bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-3 transition-colors shadow-sm mb-6 text-sm disabled:opacity-70"
         >
           <svg className="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
             <path
@@ -341,6 +381,38 @@ export const Login: React.FC = () => {
         </p>      
       </div>
     </div>
+
+    {showInstallBanner && deferredPrompt && (
+      <div
+        role="dialog"
+        aria-label="Install HydroAlert"
+        className="fixed bottom-0 left-0 right-0 z-50 p-4"
+      >
+        <div className="mx-auto max-w-sm rounded-xl border border-sky-500/30 bg-slate-900/95 px-4 py-3 shadow-lg backdrop-blur-md">
+          <div className="flex items-start gap-3">
+            <p className="flex-1 text-sm text-slate-200">
+              Install HydroAlert on your home screen for the best experience
+            </p>
+            <button
+              type="button"
+              onClick={dismissInstallBanner}
+              className="shrink-0 text-slate-400 hover:text-white transition-colors"
+              aria-label="Dismiss install banner"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={handleInstallApp}
+            className="mt-3 w-full rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400 transition-colors"
+          >
+            Install
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 
