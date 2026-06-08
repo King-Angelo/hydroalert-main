@@ -227,13 +227,13 @@ export const UserDashboard: React.FC = () => {
                     Current Water Level
                   </h2>
                   <div className="text-7xl font-black text-blue-900 flex items-baseline tracking-tighter drop-shadow-sm">
-                    {systemState ? systemState.waterLevel.toFixed(1) : '--'}
+                    {systemState ? systemState.waterLevel.toFixed(2) : '--'}
                     <span className="text-2xl text-blue-400 font-bold ml-1 opacity-50">m</span>
                   </div>
                   {systemState && (
                     <div className="mt-4 flex gap-4 text-[9px] font-black uppercase tracking-[0.1em] text-slate-400">
-                      <span>Normal: {Number(systemState.normalThreshold).toFixed(1)}m</span>
-                      <span className="text-orange-400">Warn: {Number(systemState.warningThreshold).toFixed(1)}m</span>
+                      <span>Normal: {Number(systemState.normalThreshold).toFixed(2)}m</span>
+                      <span className="text-orange-400">Warn: {Number(systemState.warningThreshold).toFixed(2)}m</span>
                     </div>
                   )}
                   <div className={clsx(

@@ -357,7 +357,7 @@ export const AdminDashboard: React.FC = () => {
 
                <div className="flex flex-col items-center py-6">
                  <div className="text-7xl font-black text-blue-900 mb-6 tracking-tighter drop-shadow-sm">
-                    {systemState?.waterLevel.toFixed(1)}<span className="text-2xl text-slate-300 font-bold ml-1">m</span>
+                    {systemState?.waterLevel.toFixed(2)}<span className="text-2xl text-slate-300 font-bold ml-1">m</span>
                  </div>
                  
                  <div className={clsx(
