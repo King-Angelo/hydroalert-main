@@ -190,7 +190,7 @@ export const DeviceSettings: React.FC = () => {
                     <span className="text-slate-900 font-mono font-bold text-lg">{formData.maxHeight.toFixed(2)}m</span>
                   </div>
                   <input 
-                    type="range" min="0.10" max="4" step="0.5" 
+                    type="range" min="0.10" max="4" step="0.10" 
                     value={formData.maxHeight} 
                     onChange={e => {
                       const val = parseFloat(e.target.value);
