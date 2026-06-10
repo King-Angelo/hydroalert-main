@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { db, signOut, handleFirestoreError, OperationType, auth } from '../lib/firebase';
-import { doc, onSnapshot, collection, query, where, orderBy, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { updatePassword } from 'firebase/auth';
+import { db, handleFirestoreError, OperationType, auth } from '../lib/firebase';
+import { doc, onSnapshot, collection, query, where, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import { WaveBackground } from '../components/WaveBackground';
 import { SosButton } from '../components/SosButton';
-import { LogOut, Bell, Navigation, Home, Settings, User, Phone, Lock, Save, Eye, EyeOff, Map as MapIcon, Activity, ShieldAlert, AlertCircle } from 'lucide-react';
+import { LogOut, Bell, Navigation, Home, User, Map as MapIcon, Activity, ShieldAlert, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import clsx from 'clsx';
 import { SafeMap } from '../components/SafeMap';
@@ -21,21 +20,6 @@ export const UserDashboard: React.FC = () => {
   const [cooldown, setCooldown] = useState(0);
   const [safeZones, setSafeZones] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'safety' | 'settings'>('home');
-  
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [updateMsg, setUpdateMsg] = useState({ type: '', text: '' });
-
-  useEffect(() => {
-    if (userData) {
-      setName(userData.name || '');
-      setPhone(userData.phone || '');
-    }
-  }, [userData]);
 
   useEffect(() => {
     const unsubState = onSnapshot(doc(db, 'systemState', 'current'), (snapshot) => {
@@ -112,41 +96,6 @@ export const UserDashboard: React.FC = () => {
     }
   };
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setIsUpdating(true);
-    setUpdateMsg({ type: '', text: '' });
-
-    try {
-      // Update Firestore
-      await updateDoc(doc(db, 'users', user.uid), {
-        name,
-        phone,
-        updatedAt: serverTimestamp()
-      });
-
-      // Update Password if provided
-      if (newPassword) {
-        if (newPassword !== confirmPassword) {
-          throw new Error('Passwords do not match');
-        }
-        if (newPassword.length < 6) {
-          throw new Error('Password must be at least 6 characters');
-        }
-        await updatePassword(auth.currentUser!, newPassword);
-        setNewPassword('');
-        setConfirmPassword('');
-      }
-
-      setUpdateMsg({ type: 'success', text: 'Profile updated successfully!' });
-    } catch (err: any) {
-      setUpdateMsg({ type: 'error', text: err.message || 'Failed to update profile' });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   let floodState: 'normal' | 'warning' | 'danger' = 'normal';
   let displayMessage = '';
   if (systemState) {
@@ -199,7 +148,7 @@ export const UserDashboard: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-black text-white tracking-tight leading-none drop-shadow-md">HydroAlert</h1>
-                <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest mt-1">Hello, {userData?.fullName?.split(' ')[0] || user?.displayName?.split(' ')[0] || 'User'}</p>
+                <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest mt-1">Hello, {userData?.name?.split(' ')[0] || user?.displayName?.split(' ')[0] || 'User'}</p>
               </div>
             </div>
             <button 
@@ -429,10 +378,10 @@ export const UserDashboard: React.FC = () => {
                 >
                   <div className="flex items-center gap-4 mb-10">
                     <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center text-white text-3xl font-black shadow-2xl shadow-blue-200">
-                      {userData?.fullName?.charAt(0) || 'U'}
+                      {userData?.name?.charAt(0) || 'U'}
                     </div>
                     <div>
-                      <h2 className="text-2xl font-black text-slate-800 tracking-tight">{userData?.fullName}</h2>
+                      <h2 className="text-2xl font-black text-slate-800 tracking-tight">{userData?.name}</h2>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{user?.email}</p>
                     </div>
                   </div>

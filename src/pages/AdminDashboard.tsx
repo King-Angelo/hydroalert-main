@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { db, signOut, handleFirestoreError, OperationType } from '../lib/firebase';
 import { writeAuditLog } from '../lib/audit';
-import { doc, onSnapshot, collection, query, where, orderBy, setDoc, updateDoc, serverTimestamp, getDocs, addDoc } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, orderBy, setDoc, updateDoc, serverTimestamp, getDocs, addDoc } from 'firebase/firestore';
 import { WaveBackground } from '../components/WaveBackground';
 import { LogOut, Activity, Settings2, AlertCircle, Navigation, CheckCircle, ShieldAlert, MapPin, Users, UserCog, Map as MapIcon, Home, Bell, Settings, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
@@ -117,11 +117,10 @@ export const AdminDashboard: React.FC = () => {
 
   const handleCreateAnnouncement = async () => {
     if (!newAnnouncement) return;
-    const announcementMessage = newAnnouncement;
     try {
       await addDoc(collection(db, 'alerts'), {
         level: 'announcement',
-        message: announcementMessage,
+        message: newAnnouncement,
         active: true,
         createdAt: serverTimestamp()
       });
@@ -131,7 +130,7 @@ export const AdminDashboard: React.FC = () => {
           user.email ?? '',
           'Posted Announcement',
           'alerts',
-          announcementMessage
+          newAnnouncement
         );
       }
       setNewAnnouncement('');
@@ -142,11 +141,10 @@ export const AdminDashboard: React.FC = () => {
 
   const handleCreateAlert = async () => {
     if (!newAlert.message) return;
-    const { level, message } = newAlert;
     try {
       await addDoc(collection(db, 'alerts'), {
-        level,
-        message,
+        level: newAlert.level,
+        message: newAlert.message,
         active: true,
         createdAt: serverTimestamp()
       });
@@ -156,7 +154,7 @@ export const AdminDashboard: React.FC = () => {
           user.email ?? '',
           'Broadcast Alert',
           'alerts',
-          `Level: ${level} — ${message}`
+          `Level: ${newAlert.level} — ${newAlert.message}`
         );
       }
       setNewAlert({ message: '', level: 'warning' });
@@ -198,13 +196,11 @@ export const AdminDashboard: React.FC = () => {
 
   const handleAddSafeZone = async () => {
     if (!isAddingZone || !zoneName.trim()) return;
-    const trimmedName = zoneName.trim();
-    const [lat, lng] = isAddingZone;
     try {
       await addDoc(collection(db, 'safeZones'), {
-        name: trimmedName,
-        lat,
-        lng,
+        name: zoneName.trim(),
+        lat: isAddingZone[0],
+        lng: isAddingZone[1],
         type: 'Evacuation Center',
         createdAt: serverTimestamp()
       });
@@ -213,8 +209,8 @@ export const AdminDashboard: React.FC = () => {
           user.uid,
           user.email ?? '',
           'Added Safe Zone',
-          `safeZones/${trimmedName}`,
-          `Coordinates: ${lat}, ${lng}`
+          `safeZones/${zoneName.trim()}`,
+          `Coordinates: ${isAddingZone[0]}, ${isAddingZone[1]}`
         );
       }
       setIsAddingZone(null);
@@ -340,7 +336,6 @@ export const AdminDashboard: React.FC = () => {
          {activeTab === 'overview' ? (
            <>
           <div className="w-full md:w-1/3 flex flex-col gap-6">
-            {/* Current State & Simulator */}
              <div className="bg-white/90 backdrop-blur-md border border-white/50 rounded-[1.5rem] p-6 shadow-xl space-y-6">
               <div className="flex items-center justify-between">
                  <h2 className="text-xs uppercase tracking-widest text-blue-400 font-bold flex items-center gap-2">
@@ -410,7 +405,6 @@ export const AdminDashboard: React.FC = () => {
           </div>
 
           <div className="w-full md:w-2/3 flex flex-col gap-6">
-             {/* SOS Signals */}
              <div className="bg-white/90 backdrop-blur-md border border-white/50 rounded-[1.5rem] p-6 shadow-xl min-h-[300px]">
                <h2 className="text-xs uppercase tracking-widest text-red-500 font-bold mb-4 flex items-center gap-2">
                 <Navigation className="w-4 h-4" /> Active Emergency SOS
@@ -443,7 +437,6 @@ export const AdminDashboard: React.FC = () => {
                </div>
              </div>
 
-             {/* Active Alerts List */}
              <div className="bg-white/90 backdrop-blur-md border border-white/50 rounded-[1.5rem] p-6 shadow-xl">
                <h2 className="text-xs uppercase tracking-widest text-slate-500 font-bold flex items-center gap-2 mb-4">
                 <AlertCircle className="w-4 h-4" /> Manage Active Alerts
